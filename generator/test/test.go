@@ -1,5 +1,12 @@
 package main
 
+import (
+	"fmt"
+	"io/ioutil"
+	"log"
+	"strings"
+)
+
 //	_ "github.com/sijms/go-ora/v2"
 
 var localDB = map[string]string{
@@ -236,3 +243,23 @@ var localDB = map[string]string{
 // 		}
 // 	}
 // }
+
+func main() {
+
+	pathFile := "D:/PROJETOS_DIVERSOS/projetos GO/go-api/go-api/generator/test/feriado.txt"
+	input, err := ioutil.ReadFile(pathFile)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	lines := strings.Split(string(input), "\n")
+
+	dateHoliday := false
+	for _, line := range lines {
+		if strings.Contains(line, "01/01/2026") { //time.Now().Format("02/01/2006")) {
+			dateHoliday = true
+			break
+		}
+	}
+	fmt.Println(dateHoliday)
+}

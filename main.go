@@ -50,7 +50,7 @@ func main() {
 		)
 	}))
 
-	router.Run(":8080")
+	router.RunTLS(":8080", "STAR_aviva_com_br.crt", "aviva.com.br.key")
 }
 
 func HashSenha(senha string) (string, error) {
