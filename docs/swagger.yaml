@@ -1,0 +1,68 @@
+definitions:
+  controllers.HTTPError:
+    properties:
+      code:
+        type: integer
+      mensagem:
+        type: string
+    type: object
+  controllers.SaudacaoResponse:
+    properties:
+      mensagem:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: |-
+    A Shadow API é uma interface robusta e segura, projetada para fornecer dados estratégicos e operacionais a usuários-chave da organização.
+    Esta API tem como principal objetivo dar suporte a processos de tomada de decisão, análise de desempenho e integração de dados entre sistemas.
+    Usuários-alvo incluem times de operações, lideranças estratégicas, analistas e demais áreas que demandam informações atualizadas e estruturadas.
+
+    Funcionalidades incluem:
+    - Consulta de dados operacionais em tempo real
+    - Acesso a indicadores estratégicos
+    - Integração com plataformas internas e externas
+    - Suporte a autenticação básica (Basic Auth)
+
+    Para utilizar a API, é necessário autenticação e autorização apropriada.
+    Em caso de dúvidas, entre em contato com o time responsável pela governança de dados.
+  title: API Shadow
+  version: "1.0"
+paths:
+  /api/saudacao/{nome}:
+    get:
+      description: Exibe uma saudação ao usuário que insere o nome como parâmetro
+      parameters:
+      - description: Nome
+        in: path
+        name: nome
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.SaudacaoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.HTTPError'
+      security:
+      - BasicAuth: []
+      summary: Endpoint de saudação ao usuário
+      tags:
+      - Saudacao
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"

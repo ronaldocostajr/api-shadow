@@ -11,13 +11,14 @@ import (
 func SetupRoutes(router *gin.Engine) {
 	// Rota pública
 	router.POST("/login", controllers.Login)
-
+	
 	// Rotas protegidas com JWT
 	api := router.Group("/api")
 	//api.Use(middleware.JWTAuth()) // protege todas as rotas abaixo
-
+	routes.SwaggerRoutes(api)
 	// Rate Limiter 5 requisições por segundo
 	api.Use(middleware.RateLimiter())
+	api.Use(middleware.BasicAuth())
 	{
 		routes.UnidadeRoutes(api)
 		routes.UsuarioRoutes(api)
@@ -25,6 +26,8 @@ func SetupRoutes(router *gin.Engine) {
 		routes.WriteGeneratorRoutes(api)
 		routes.Tb_paisRoutes(api)
 		routes.Tb_cepRoutes(api)
+		routes.SaudacaoRoutes(api)
+		
 		// NÃO RETIRAR ESSA LINHA
 	}
 }
