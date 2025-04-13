@@ -36,6 +36,6 @@ type HTTPError struct {
 func Saudacao(c *gin.Context) {
 	nome := c.Param("nome")
 	c.JSON(200, gin.H{
-		"message": "Olá, " + nome + "! Saudações 👋",
+		"mensagem": "Olá, " + nome + "! Saudações 👋",
 	})
 }
