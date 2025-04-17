@@ -192,12 +192,20 @@ func GetWriteGenerator(c *gin.Context) {
 	linhaController = append(linhaController, "\t\"net/http\"")
 	linhaController = append(linhaController, "\t\"strconv\"")
 	linhaController = append(linhaController, "\t\"time\"")
+	stringsExists := false
+	if os.Getenv("security.roles") != "false" {
+		linhaController = append(linhaController, "\t\"strings\"")
+		stringsExists = true
+	}
 	for _, column_name := range fieldsSearch {
 		for indexW, valueW := range column_name {
 			if string(valueW) == "&" {
 				if column_name[indexW+1:] == "inS" || column_name[indexW+1:] == "inI" {
-					linhaController = append(linhaController, "\t\"strings\"")
-					break
+					if !stringsExists {
+						linhaController = append(linhaController, "\t\"strings\"")
+						stringsExists = true
+						break
+					}
 				}
 			}
 		}
@@ -209,6 +217,20 @@ func GetWriteGenerator(c *gin.Context) {
 	linhaController = append(linhaController, ")")
 	linhaController = append(linhaController, "")
 	linhaController = append(linhaController, "func Get"+strings.Title(table_name)+"(c *gin.Context) {")
+	linhaController = append(linhaController, "\tuserRoles := \"RL_ADMIN\"")
+	linhaRoles := ""
+	if os.Getenv("security.roles") != "false" {
+		securityRoles := strings.Split(os.Getenv("security.roles"), ",")
+		for _, value := range securityRoles {
+			linhaRoles += " !strings.Contains(userRoles, \"" + value + "\") &&"
+		}
+		linhaRoles = linhaRoles[0 : len(linhaRoles)-3]
+		fmt.Println(linhaRoles)
+		linhaController = append(linhaController, "\tif "+linhaRoles+" {")
+		linhaController = append(linhaController, "\t\tc.JSON(400, \"Sem direito a acessar a API\")")
+		linhaController = append(linhaController, "\t\treturn")
+		linhaController = append(linhaController, "\t}")
+	}
 	linhaController = append(linhaController, "\tstartTime := time.Now()")
 	linhaController = append(linhaController, "\tvar "+table_name+" []models."+strings.Title(table_name))
 	linhaController = append(linhaController, "")
@@ -259,7 +281,6 @@ func GetWriteGenerator(c *gin.Context) {
 			linhaController = append(linhaController, "\t\t\""+column_name+"\",")
 			linhaController = append(linhaController, "\t\tc.Query(\""+column_text_field+"\"),")
 		}
-		fmt.Println(len(fieldsSearch), index)
 		if len(fieldsSearch) == index+1 {
 			linhaController = append(linhaController, "\t}")
 		}
