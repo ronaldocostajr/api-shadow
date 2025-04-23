@@ -1,12 +1,14 @@
 // Desenvolvedor: Ronaldo Costa
 // Versão: 1.0.0 V
-// Compilação: 2025-04-17 08:35:03.9170463 -0300 -03 m=+5.740333701
+// Compilação: 2025-04-19 06:43:59.3717806 -0300 -03 m=+33.226719001
 // Comentário adicional: código adiconal
 package controllers
 
 import (
+	"fmt"
 	"go-api/database"
 	"go-api/logSystem"
+	middleware "go-api/middlewares"
 	"go-api/models"
 	"net/http"
 	"strconv"
@@ -17,8 +19,8 @@ import (
 )
 
 func GetTb_cep(c *gin.Context) {
-	userRoles := "RL_DADOS"
-	if !strings.Contains(userRoles, "RL_ADMIN") || !strings.Contains(userRoles, "RL_CONTROLADORIA") || !strings.Contains(userRoles, "RL_TESOURARIA") {
+	userRoles := "RL_ADMIN"
+	if !strings.Contains(userRoles, "RL_ADMIN") && !strings.Contains(userRoles, "RL_CONTROLADORIA") && !strings.Contains(userRoles, "RL_TESOURARIA") {
 		c.JSON(400, "Sem direito a acessar a API")
 		return
 	}
@@ -88,5 +90,7 @@ func GetTb_cep(c *gin.Context) {
 			logSystem.WriteLogFile(":202:SHADOW:shadow_financeiro:tesouraria:ronaldo.costa@aviva.com.br:" + startTime.String() + ":" + endTime.String())
 		}
 	}
+	serr := middleware.RedisInsert("ronaldo", "costa")
+	fmt.Println(serr)
 	c.JSON(http.StatusOK, tb_cep)
 }
