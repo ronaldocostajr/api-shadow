@@ -27,7 +27,6 @@ func SetupRoutes(router *gin.Engine) {
 		routes.Tb_paisRoutes(api)
 		routes.Tb_cepRoutes(api)
 		routes.SaudacaoRoutes(api)
-		
 		// NÃO RETIRAR ESSA LINHA
 	}
 }

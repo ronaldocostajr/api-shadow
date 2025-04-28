@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"go-api/database"
 	"go-api/routes"
 	"go-api/utils"
 	"log"
@@ -41,11 +40,13 @@ import (
 // @description		Em caso de dúvidas, entre em contato com o time responsável pela governança de dados.
 // @securityDefinitions.basic  BasicAuth
 func main() {
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading .env file: %s", err)
 	}
-	database.Connect()
+
+	//database.Connect()
 	utils.LoadMessages()
 
 	router := gin.Default()
@@ -67,7 +68,7 @@ func main() {
 		)
 	}))
 
-	router.RunTLS(":8080", "STAR_aviva_com_br.crt", "aviva.com.br.key")
+	router.RunTLS(":8080", "wildcard_aviva_com_br.crt", "wildcard_aviva_com_br.key")
 }
 
 func HashSenha(senha string) (string, error) {
