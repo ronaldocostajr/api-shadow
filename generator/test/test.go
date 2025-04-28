@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
-	"strings"
+	middleware "go-api/middlewares"
 )
 
 //	_ "github.com/sijms/go-ora/v2"
@@ -244,22 +242,72 @@ var localDB = map[string]string{
 // 	}
 // }
 
+// func main() {
+
+// 	pathFile := "D:/PROJETOS_DIVERSOS/projetos GO/go-api/go-api/generator/test/feriado.txt"
+// 	input, err := ioutil.ReadFile(pathFile)
+// 	if err != nil {
+// 		log.Fatalln(err)
+// 	}
+
+// 	lines := strings.Split(string(input), "\n")
+
+// 	dateHoliday := false
+// 	for _, line := range lines {
+// 		if strings.Contains(line, "01/01/2026") { //time.Now().Format("02/01/2006")) {
+// 			dateHoliday = true
+// 			break
+// 		}
+// 	}
+// 	fmt.Println(dateHoliday)
+// }
+
+// func main() {
+// 	ctx := context.Background()
+
+// 	client := redis.NewClient(&redis.Options{
+// 		Addr:     "redis-14966.c245.us-east-1-3.ec2.redns.redis-cloud.com:14966",
+// 		Password: "Hkm9nejhkHHLp5zUxdUc2hEy3IuIrjHy", // no password set
+// 		DB:       0,                                  // use default DB
+// 	})
+
+// 	err := client.Set(ctx, "key", "value", 0).Err()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	val, err := client.Get(ctx, "key").Result()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	fmt.Println("key", val)
+
+// 	fmt.Println("REDIS", middleware.RedisRead("key"))
+
+// 	val2, err := client.Get(ctx, "key2").Result()
+// 	if err == redis.Nil {
+// 		fmt.Println("key2 does not exist")
+// 	} else if err != nil {
+// 		panic(err)
+// 	} else {
+// 		fmt.Println("key2", val2)
+// 	}
+// 	// Output: key value
+// 	// key2 does not exist
+
+// }
+
 func main() {
+	retRedisInsert := middleware.RedisInsert("teste", "meu valor 123456")
+	fmt.Println(retRedisInsert)
 
-	pathFile := "D:/PROJETOS_DIVERSOS/projetos GO/go-api/go-api/generator/test/feriado.txt"
-	input, err := ioutil.ReadFile(pathFile)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	retRedisRead := middleware.RedisRead("teste")
+	fmt.Println(retRedisRead)
 
-	lines := strings.Split(string(input), "\n")
+	// retRedisDelete := middleware.RedisDelete("teste")
+	// fmt.Println(retRedisDelete)
 
-	dateHoliday := false
-	for _, line := range lines {
-		if strings.Contains(line, "01/01/2026") { //time.Now().Format("02/01/2006")) {
-			dateHoliday = true
-			break
-		}
-	}
-	fmt.Println(dateHoliday)
+	retRedisRead1 := middleware.RedisRead("teste")
+	fmt.Println(retRedisRead1)
+
 }
