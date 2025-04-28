@@ -169,7 +169,7 @@ func Auth(conn *ldap.Conn, user UserLogin) (bool, error) {
 	username, err := searchUser(conn, user.Email)
 	
 	if err != nil{
-		log.Errorf("Erro qualquer coisa", err)
+		log.Errorf("Erro qualquer coisa: %v", err)
 		return false, err
 	}
 

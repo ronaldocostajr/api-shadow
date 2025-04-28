@@ -1,6 +1,6 @@
 //Desenvolvedor: Ronaldo Costa
 //Versão: 1.0.0 V
-//Compilação: 2025-04-19 06:43:59.371001 -0300 -03 m=+33.225939401
+//Compilação: 2025-04-28 10:50:12.8751067 -0300 -03 m=+17.975173001
 //Comentário adicional: código adiconal
 package models
 

@@ -18,7 +18,7 @@ func SetupRoutes(router *gin.Engine) {
 	routes.SwaggerRoutes(api)
 	// Rate Limiter 5 requisições por segundo
 	api.Use(middleware.RateLimiter())
-	api.Use(middleware.BasicAuth())
+	//api.Use(middleware.BasicAuth())
 	{
 		routes.UnidadeRoutes(api)
 		routes.UsuarioRoutes(api)

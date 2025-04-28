@@ -103,3 +103,4 @@
 2025/04/12 07:06:01 textFile.go:26: LogFile SHADOW:shadow_generico:GetTb_pais:ronaldo.costa@aviva.com.br:generico:2002025-04-12 07:06:01.1575377 -0300 -03 m=+150.507084901
 2025/04/12 07:06:03 textFile.go:26: LogFile SHADOW:shadow_generico:GetTb_pais:ronaldo.costa@aviva.com.br:generico:2002025-04-12 07:06:02.8414465 -0300 -03 m=+152.190980701
 2025/04/12 07:08:04 textFile.go:26: LogFile SHADOW:shadow_generico:GetTb_pais:ronaldo.costa@aviva.com.br:generico:2002025-04-12 07:08:04.2705162 -0300 -03 m=+273.619115401
+2025/04/28 10:51:47 textFile.go:26: LogFile :202:SHADOW:shadow_financeiro:tesouraria:ronaldo.costa@aviva.com.br:2025-04-28 10:51:16.5226777 -0300 -03 m=+46.428181601:2025-04-28 10:51:17.2299685 -0300 -03 m=+47.135477401

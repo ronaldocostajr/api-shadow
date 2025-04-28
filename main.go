@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"go-api/database"
 	"go-api/routes"
 	"go-api/utils"
 	"log"
@@ -46,7 +47,7 @@ func main() {
 		log.Fatalf("Error loading .env file: %s", err)
 	}
 
-	//database.Connect()
+	database.ConnectORA()
 	utils.LoadMessages()
 
 	router := gin.Default()

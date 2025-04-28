@@ -1,26 +1,22 @@
-// Desenvolvedor: Ronaldo Costa
-// Versão: 1.0.0 V
-// Compilação: 2025-04-19 06:43:59.3717806 -0300 -03 m=+33.226719001
-// Comentário adicional: código adiconal
+//Desenvolvedor: Ronaldo Costa
+//Versão: 1.0.0 V
+//Compilação: 2025-04-28 10:50:12.882475 -0300 -03 m=+17.982541301
+//Comentário adicional: código adiconal
 package controllers
-
 import (
-	"fmt"
-	"go-api/database"
-	"go-api/logSystem"
-	middleware "go-api/middlewares"
-	"go-api/models"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
-
+	"strings"
+	"go-api/database"
+	"go-api/models"
+	"go-api/logSystem"
 	"github.com/gin-gonic/gin"
 )
 
 func GetTb_cep(c *gin.Context) {
 	userRoles := "RL_ADMIN"
-	if !strings.Contains(userRoles, "RL_ADMIN") && !strings.Contains(userRoles, "RL_CONTROLADORIA") && !strings.Contains(userRoles, "RL_TESOURARIA") {
+	if  !strings.Contains(userRoles, "RL_ADMIN") && !strings.Contains(userRoles, "RL_CONTROLADORIA") && !strings.Contains(userRoles, "RL_TESOURARIA") {
 		c.JSON(400, "Sem direito a acessar a API")
 		return
 	}
@@ -68,8 +64,8 @@ func GetTb_cep(c *gin.Context) {
 		query = query.Where("ds_logradouro ILIKE ?", ds_logradouro+"%")
 	}
 
-	if len(false) > 0 {
-		query = query.Where("false =  ? ", false+" 00:00:00")
+	if len(false) > 0  {
+		query = query.Where("false =  ? ", false +" 00:00:00")
 	}
 
 	// Efetua a consulta no banco de dados
@@ -80,17 +76,15 @@ func GetTb_cep(c *gin.Context) {
 	if err != nil {
 		errMd0 := logSystem.WriteLogMongoDB("SHADOW", "shadow_financeiro", "GetTb_cep", "ronaldo.costa@aviva.com.br", "tesouraria", startTime, endTime, mdbParameterField, mdbParameterDate, mdbUrl, "404")
 		if errMd0 != nil {
-			logSystem.WriteLogFile(":404:SHADOW:shadow_financeiro:tesouraria:ronaldo.costa@aviva.com.br:" + startTime.String() + ":" + endTime.String())
+			logSystem.WriteLogFile(":404:SHADOW:shadow_financeiro:tesouraria:ronaldo.costa@aviva.com.br:"+startTime.String()+":"+endTime.String())
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao consultar a tabela : CEP"})
 		return
 	} else {
 		errMd1 := logSystem.WriteLogMongoDB("SHADOW", "shadow_financeiro", "GetTb_cep", "ronaldo.costa@aviva.com.br", "tesouraria", startTime, endTime, mdbParameterField, mdbParameterDate, mdbUrl, "202")
 		if errMd1 != nil {
-			logSystem.WriteLogFile(":202:SHADOW:shadow_financeiro:tesouraria:ronaldo.costa@aviva.com.br:" + startTime.String() + ":" + endTime.String())
+			logSystem.WriteLogFile(":202:SHADOW:shadow_financeiro:tesouraria:ronaldo.costa@aviva.com.br:"+startTime.String()+":"+endTime.String())
 		}
 	}
-	serr := middleware.RedisInsert("ronaldo", "costa")
-	fmt.Println(serr)
 	c.JSON(http.StatusOK, tb_cep)
 }
