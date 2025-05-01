@@ -53,7 +53,7 @@ func ConnectORA() {
 	dialector := oracle.New(oracle.Config{
 		DSN:	url,
 		IgnoreCase: 	false,
-		NamingCaseSensitive: true,
+		NamingCaseSensitive: false,
 		VarcharSizeIsCharLength: true,
 		RowNumberAliasForOracle11: "ROW_NUM",
 	})

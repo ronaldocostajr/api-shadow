@@ -12,22 +12,16 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"fmt"
-	_ "fmt"
+	"go-api/database"
+	"go-api/models"
 	"go-api/utils"
 	"net/http"
 	"os"
-	_ "os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-ldap/ldap/v3"
-	_ "github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
-)
-
-const (
-	username = "admin"
-	password = "1234"
 )
 
 type UserLogin struct {
@@ -39,13 +33,6 @@ type UserLogin struct {
 func BasicAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		auth := c.GetHeader("Authorization")
-		if auth == "" || !strings.HasPrefix(auth, "Basic ") {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": utils.GetMessage("geral", "error.unauthorized"),
-			})
-			c.Abort()
-			return
-		}
 
 		payload, err := base64.StdEncoding.DecodeString(auth[len("Basic "):])
 		if err != nil {
@@ -57,22 +44,26 @@ func BasicAuth() gin.HandlerFunc {
 		}
 
 		pair := strings.SplitN(string(payload), ":", 2)
-		//fmt.Println("valor de pair", pair)
+		//fmt.Println("Payload: ",string(payload), "Tamanho: ", len(pair), "Pair: ", pair)
 		user := UserLogin{
 			Username: "",
 			Email: pair[0],
 			Password: pair[1],
 		}
-		if len(pair) != 2{
+		if len(pair) != 2 || len(user.Email) <= 0 || len(user.Password) <= 0{
 			c.JSON(http.StatusBadRequest, gin.H{
-				"message": utils.GetMessage("geral", "error.bad_request"),
+				"message": utils.GetMessage("geral", "error.bad_request_auth"),
 			})
 			c.Abort()
 			return
 		}
 		conn, err := Connect()
 		if err != nil {
-		    log.Fatal("LDAP connection failed.")
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": utils.GetMessage("geral", "error.internal_ldap"),
+			})
+			c.Abort()
+			return
 		}
 		defer conn.Close()
 
@@ -87,8 +78,6 @@ func BasicAuth() gin.HandlerFunc {
 	   
 		searchResp, err := conn.Search(searchRequest)
 		if err != nil {
-		 //log.Errorf("LDAP search failed for user %s, error details: %v", user.Username, err)
-		 //return false, err
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"message": utils.GetMessage("geral", "error.credentials_invalid"),
 			})
@@ -97,9 +86,6 @@ func BasicAuth() gin.HandlerFunc {
 		}
 	   
 		if len(searchResp.Entries) != 1 {
-		 //log.Errorf("User: %s not found or multiple entries found", user.Username)
-		 //err = fmt.Errorf("user: %s not found or multiple entries found", user.Username)
-		 //return false, err
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"message": utils.GetMessage("geral", "error.credentials_invalid"),
 			})
@@ -108,50 +94,47 @@ func BasicAuth() gin.HandlerFunc {
 		}
 	   
 		userDN := searchResp.Entries[0].DN
-		fmt.Println("TESTE DO search")
 		
 		err = conn.Bind(userDN, user.Password)
 		if err != nil {
-		 //log.Errorf("LDAP authentication failed for user %s, error details: %v", user.Username, err)
-		 //err = fmt.Errorf("LDAP authentication failed for user %s", user.Username)
-		 //return false, err
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"message": utils.GetMessage("geral", "error.credentials_invalid"),
 			})
 			c.Abort()
 			return
 		}
-	   
+
+		status, err := GetStatusByEmail(user.Email)
+
+		if err != nil{
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "Algo deu errado, procure o administrador da API.",
+			})
+			c.Abort()
+			return
+		}else if strings.TrimSpace(strings.ToUpper(status[0])) == "N" {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": utils.GetMessage("geral", "error.user_inactive"),
+			})
+			c.Abort()
+			return
+		}
+		c.Set("email", user.Email)
 		c.Next()
 
-		// authenticated, authErr := Auth(conn, user)
-		// if authErr != nil {
-		//     log.Fatal("Authentication failed.")
-		// 	c.JSON(http.StatusUnauthorized, gin.H{
-		// 		"message": utils.GetMessage("geral", "error.credentials_invalid"),
-		// 	})
-		// 	c.Abort()
-		// 	return
-		// }
-
-		// if authenticated {
-		//     log.Info("User authenticated successfully.")
-		// 	c.Next()
-		// } else {
-		//     log.Info("Authentication failed. Invalid credentials.")
-		// 	c.JSON(http.StatusUnauthorized, gin.H{
-		// 		"message": utils.GetMessage("geral", "error.credentials_invalid"),
-		// 	})
-		// 	c.Abort()
-		// 	return
-		// }
-		//c.Next()
 	}
 }
 
+func GetStatusByEmail(email string) ([]string, error) {
+	var roles []string
+	err := database.DB.Model(&models.Tb_log_usuario{}).
+		Where("DS_EMAIL = ?", email).
+		Pluck("FL_ATIVO", &roles).Error
+	return roles, err
+}
 
 func Connect() (*ldap.Conn, error) {
-	conn, err := ldap.DialTLS("tcp", os.Getenv("LDAP_ADDRESS"), &tls.Config{InsecureSkipVerify: true})
+	conn, err := ldap.DialTLS("tcp", os.Getenv("LDAP_ADDRESS"), &tls.Config{InsecureSkipVerify: false})
 	if err != nil {
 	 log.Errorf("LDAP connection failed, error details: %v", err)
 	 return nil, err
@@ -210,7 +193,6 @@ func Auth(conn *ldap.Conn, user UserLogin) (bool, error) {
 
 func searchUser(conn *ldap.Conn, email string) (string, error){
 	//_email := "thiago.leite@aviva.com.br"
-	fmt.Println("TESTE DO search dentro")
 	searchRequest := ldap.NewSearchRequest(
 		os.Getenv("LDAP_BASE_DN"),
 		ldap.ScopeWholeSubtree,
@@ -223,22 +205,11 @@ func searchUser(conn *ldap.Conn, email string) (string, error){
 		nil,
 	)
 
-	// Executa a busca
+	// Executa a busca do SamAccountName pelo email passado
 	sr, err := conn.Search(searchRequest)
 	if err != nil {
-		//log.Fatalf("Erro na busca: %v", err)
 		return "", err
 	}
 
-	fmt.Println("SR", sr.Entries[0].GetAttributeValue("sAMAccountName"))
-
 	return sr.Entries[0].GetAttributeValue("sAMAccountName"), nil
-
-	// Mostra os resultados
-	// for _, entry := range sr.Entries {
-	// 	fmt.Printf("DN: %s\n", entry.DN)
-	// 	fmt.Printf("CN: %s\n", entry.GetAttributeValue("cn"))
-	// 	fmt.Printf("Email: %s\n", entry.GetAttributeValue("mail"))
-	// 	fmt.Printf("sAMAccountName: %s\n", entry.GetAttributeValue("sAMAccountName"))
-	// }
 }

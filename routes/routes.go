@@ -18,7 +18,10 @@ func SetupRoutes(router *gin.Engine) {
 	routes.SwaggerRoutes(api)
 	// Rate Limiter 5 requisições por segundo
 	api.Use(middleware.RateLimiter())
-	//api.Use(middleware.BasicAuth())
+	api.Use(middleware.ContentTypeJson())
+	api.Use(middleware.BasicAuth())
+	api.Use(middleware.CheckDays())
+	api.Use(middleware.GetUserRoles())
 	{
 		routes.UnidadeRoutes(api)
 		routes.UsuarioRoutes(api)
@@ -27,6 +30,9 @@ func SetupRoutes(router *gin.Engine) {
 		routes.Tb_paisRoutes(api)
 		routes.Tb_cepRoutes(api)
 		routes.SaudacaoRoutes(api)
+		routes.Tb_log_usuarioRoutes(api)
+		routes.Tb_cdp_cepRoutes(api)
+		routes.Tb_api_dia_feriadoRoutes(api)
 		// NÃO RETIRAR ESSA LINHA
 	}
 }

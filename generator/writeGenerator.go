@@ -80,6 +80,7 @@ func GetWriteGenerator(c *gin.Context) {
 		linha = append(linha, "type "+strings.Title(table_name)+" struct {")
 		break
 	}
+	
 	primaryKey := os.Getenv("fields.primaryKey")
 	var textPrimarykey string = ""
 	var validate = ""
@@ -112,7 +113,15 @@ func GetWriteGenerator(c *gin.Context) {
 		} else {
 			textPrimarykey = ""
 		}
-		linha = append(linha, "\t"+strings.Title(v.Column_name)+" "+v.Data_type_front+" `gorm:\"column:"+v.Column_name+"\" json:\""+v.Column_name+"\""+textPrimarykey+readOnly+validate+"\" `")
+		var data_type = ""
+		if v.Data_type_front == "INTEGER"{
+			data_type = "int"
+		}else if v.Data_type_front == "DATE"{
+			data_type = "string"
+		}else{
+			data_type = strings.ToLower(v.Data_type_front)
+		}
+		linha = append(linha, "\t"+strings.Title(v.Column_name)+" "+data_type+" `gorm:\"column:"+strings.ToUpper(v.Column_name)+"\" json:\""+v.Column_name+"\""+textPrimarykey+readOnly+validate+"\" `")
 	}
 
 	linha = append(linha, "}")
@@ -121,13 +130,13 @@ func GetWriteGenerator(c *gin.Context) {
 		linha = append(linha, "//Nome da tabela no banco de dados")
 	}
 	linha = append(linha, "func ("+strings.Title(table_name)+") TableName() string {")
-	linha = append(linha, "\treturn \""+table_name+"\"")
+	linha = append(linha, "\treturn \""+strings.ToUpper(table_name)+"\"")
 	linha = append(linha, "}")
 	linha = append(linha, "")
 
 	err = escreverTexto(linha, os.Getenv("path")+"models/"+tabela+".go")
 	if err != nil {
-		log.Fatalf("Erro:", err)
+		log.Fatalf("Erro: %v", err)
 	}
 
 	var linhaRoutes []string
@@ -162,7 +171,7 @@ func GetWriteGenerator(c *gin.Context) {
 
 	err = escreverTexto(linhaRoutes, os.Getenv("path")+"routes/rotas/"+tabela+"_routes.go")
 	if err != nil {
-		log.Fatalf("Erro:", err)
+		log.Fatalf("Erro: %v", err)
 	}
 
 	routes := "routes." + strings.Title(table_name) + "Routes(api)"
@@ -212,21 +221,50 @@ func GetWriteGenerator(c *gin.Context) {
 	}
 	linhaController = append(linhaController, "\t\"go-api/database\"")
 	linhaController = append(linhaController, "\t\"go-api/models\"")
+	linhaController = append(linhaController, "\t\"net/http\"")
+	linhaController = append(linhaController, "\t\"strconv\"")
+	linhaController = append(linhaController, "\t\"strings\"")
+	linhaController = append(linhaController, "\t\"time\"")
 	linhaController = append(linhaController, "\t\"go-api/logSystem\"")
 	linhaController = append(linhaController, "\t\"github.com/gin-gonic/gin\"")
 	linhaController = append(linhaController, ")")
 	linhaController = append(linhaController, "")
 	linhaController = append(linhaController, "func Get"+strings.Title(table_name)+"(c *gin.Context) {")
-	linhaController = append(linhaController, "\tuserRoles := \"RL_ADMIN\"")
 	linhaRoles := ""
 	if os.Getenv("security.roles") != "false" {
+		linhaController = append(linhaController, "\n\t// Pega as Roles do usuário vindas do middleware")
+		linhaController = append(linhaController, "\trolesInterface, exists := c.Get(\"roles\")")
+		linhaController = append(linhaController, "\tif !exists {")
+		linhaController = append(linhaController, "\t\tc.JSON(400, gin.H{\"message\": \"Usuário não autenticado\"})")
+		linhaController = append(linhaController, "\t\treturn")
+		linhaController = append(linhaController, "\t}")
+		linhaController = append(linhaController, "\troles, _ := rolesInterface.([]string)")
+		linhaController = append(linhaController, "\tuserRoles := strings.Split(roles[0], \",\")")
+
 		securityRoles := strings.Split(os.Getenv("security.roles"), ",")
 		for _, value := range securityRoles {
 			linhaRoles += " !strings.Contains(userRoles, \"" + value + "\") &&"
 		}
 		linhaRoles = linhaRoles[0 : len(linhaRoles)-3]
 		fmt.Println(linhaRoles)
-		linhaController = append(linhaController, "\tif "+linhaRoles+" {")
+
+		linhaController = append(linhaController, "\n\t// Roles requeridas do endpoint")
+		linhaController = append(linhaController, "\tuserRolesRequired := strings.Split(\"" + os.Getenv("security.roles") + "\", \",\")")
+
+		linhaController = append(linhaController, "\n\t// Busca itens em comum nos slices")
+		linhaController = append(linhaController, "\troleSet := make(map[string]struct{})")
+		linhaController = append(linhaController, "\tboolRoles := false")
+
+		linhaController = append(linhaController, "\tfor _, item := range userRoles {")
+		linhaController = append(linhaController, "\t\troleSet[item] = struct{}{}")
+		linhaController = append(linhaController, "\t}")
+		linhaController = append(linhaController, "\n\tfor _, item := range userRolesRequired {")
+		linhaController = append(linhaController, "\t\tif _, exists := roleSet[item]; exists {")
+		linhaController = append(linhaController, "\n\t\t\tboolRoles = true")
+		linhaController = append(linhaController, "\t\t}")
+		linhaController = append(linhaController, "\t}\n")
+
+		linhaController = append(linhaController, "\tif !boolRoles{")
 		linhaController = append(linhaController, "\t\tc.JSON(400, \"Sem direito a acessar a API\")")
 		linhaController = append(linhaController, "\t\treturn")
 		linhaController = append(linhaController, "\t}")
@@ -478,7 +516,7 @@ func GetWriteGenerator(c *gin.Context) {
 
 	err = escreverTexto(linhaController, os.Getenv("path")+"controllers/"+tabela+"_controller.go")
 	if err != nil {
-		log.Fatalf("Erro:", err)
+		log.Fatalf("Erro: %v", err)
 	}
 
 	copy("generator/generator.properties", "generator/files/"+table_name+".properties")
@@ -555,4 +593,5 @@ func writeRoutes(route string) {
 			log.Fatalln(err)
 		}
 	}
+	
 }
