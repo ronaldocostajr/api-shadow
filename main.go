@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go-api/database"
 	"go-api/routes"
+	"go-api/utils"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -24,12 +25,30 @@ import (
 // 	c.Next()
 // }
 
+// @title           API Shadow
+// @version         1.0
+// @description     A Shadow API é uma interface robusta e segura, projetada para fornecer dados estratégicos e operacionais a usuários-chave da organização.
+// @description		Esta API tem como principal objetivo dar suporte a processos de tomada de decisão, análise de desempenho e integração de dados entre sistemas.
+// @description		Usuários-alvo incluem times de operações, lideranças estratégicas, analistas e demais áreas que demandam informações atualizadas e estruturadas.
+// @description
+// @description		Funcionalidades incluem:
+//@description		- Consulta de dados operacionais em tempo real
+// @description		- Acesso a indicadores estratégicos
+// @description		- Integração com plataformas internas e externas
+// @description		- Suporte a autenticação básica (Basic Auth)
+// @description
+// @description		Para utilizar a API, é necessário autenticação e autorização apropriada.
+// @description		Em caso de dúvidas, entre em contato com o time responsável pela governança de dados.
+// @securityDefinitions.basic  BasicAuth
 func main() {
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading .env file: %s", err)
 	}
-	database.Connect()
+
+	database.ConnectORA()
+	utils.LoadMessages()
 
 	router := gin.Default()
 
@@ -50,7 +69,7 @@ func main() {
 		)
 	}))
 
-	router.RunTLS(":8080", "STAR_aviva_com_br.crt", "aviva.com.br.key")
+	router.RunTLS(":8080", "wildcard_aviva_com_br.crt", "wildcard_aviva_com_br.key")
 }
 
 func HashSenha(senha string) (string, error) {

@@ -1,0 +1,89 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "A Shadow API é uma interface robusta e segura, projetada para fornecer dados estratégicos e operacionais a usuários-chave da organização.\nEsta API tem como principal objetivo dar suporte a processos de tomada de decisão, análise de desempenho e integração de dados entre sistemas.\nUsuários-alvo incluem times de operações, lideranças estratégicas, analistas e demais áreas que demandam informações atualizadas e estruturadas.\n\nFuncionalidades incluem:\n- Consulta de dados operacionais em tempo real\n- Acesso a indicadores estratégicos\n- Integração com plataformas internas e externas\n- Suporte a autenticação básica (Basic Auth)\n\nPara utilizar a API, é necessário autenticação e autorização apropriada.\nEm caso de dúvidas, entre em contato com o time responsável pela governança de dados.",
+        "title": "API Shadow",
+        "contact": {},
+        "version": "1.0"
+    },
+    "paths": {
+        "/api/saudacao/{nome}": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Exibe uma saudação ao usuário que insere o nome como parâmetro",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saudacao"
+                ],
+                "summary": "Endpoint de saudação ao usuário",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Nome",
+                        "name": "nome",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.SaudacaoResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.HTTPError"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "controllers.HTTPError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "mensagem": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.SaudacaoResponse": {
+            "type": "object",
+            "properties": {
+                "mensagem": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BasicAuth": {
+            "type": "basic"
+        }
+    }
+}
